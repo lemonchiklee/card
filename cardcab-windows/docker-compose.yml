@@ -1,0 +1,34 @@
+# CardCab PostgreSQL Docker Compose
+# 
+# Usage:
+#   docker-compose up -d
+#
+# This will start PostgreSQL on port 5436 with the CardCab database.
+# The init.sql script will be automatically executed on first run.
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: cardcab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cardcab_db
+      POSTGRES_USER: cardcab_user
+      POSTGRES_PASSWORD: cardcab_secure_password_2025
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - cardcab_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cardcab_user -d cardcab_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  cardcab_pgdata:
+    name: cardcab_pgdata
